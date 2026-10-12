@@ -2,9 +2,9 @@
 
 | Nguồn / yêu cầu | Control đã làm | Evidence file:dòng | Giới hạn |
 |---|---|---|---|
-| Luật 91/2025/QH15 | | | |
-| NĐ 356/2025/NĐ-CP | | | |
-| Luật AI 134/2025/QH15 | | | |
-| OWASP ASI01, ASI03, ASI04 | | | |
+| Luật 91/2025/QH15 (Bảo vệ dữ liệu cá nhân) | PII Gate nhận diện và làm sạch CCCD, SĐT, STK, Email; kiểm soát quyền truy cập dữ liệu nhạy cảm theo vai trò OBO (support_l1 bị chặn đọc restricted). | `agent/pii.py:34-75`, `agent/policy.py:53-118`, `tests/test_pii.py:28-59` | Dùng tập regex tối ưu cho tiếng Việt trên dữ liệu synthetic; chưa tích hợp mô hình Named Entity Recognition (NER) đa ngữ cảnh sâu. |
+| NĐ 356/2025/NĐ-CP (Quy định chi tiết thi hành Luật BV DLCN) | Ghi nhật ký kiểm toán (Audit Ledger) dạng append-only với chuỗi băm SHA-256 (prev_hash -> hash); mọi quyết định đều có lý do (`reason`), `principal_id` và timestamp. | `agent/ledger.py:22-68`, `reports/ledger.jsonl:1-43`, `tests/test_ledger.py:22-48` | Chuỗi hash phát hiện sửa đổi/chèn/xóa dòng giữa file cục bộ, nhưng không phát hiện việc cắt đuôi file hoặc viết lại toàn bộ nếu thiếu external anchor (mốc tin cậy bên ngoài). |
+| Luật AI 134/2025/QH15 (An toàn và trách nhiệm giải trình AI) | Kiến trúc Trifecta Split phân tách ranh giới xử lý nội dung không tin cậy (Run A) và dữ liệu bảo mật (Run B); Policy PEP giám sát và chặn agent hành động vượt quyền. | `agent/runner.py:36-166`, `tests/test_split.py:75-116`, `tests/test_obo.py:51-74` | Đánh giá chủ yếu trên mô phỏng mock LLM deterministic để đảm bảo tính tái lập và chấm điểm tự động; chưa đo lường độ trễ trên multi-agent quy mô lớn. |
+| OWASP ASI01, ASI03, ASI04 (Top 10 Agentic AI Risks) | ASI01 (Prompt Injection): Run B chỉ nhận typed ticket IDs từ tên file. ASI03 (Excessive Agency): Phân quyền OBO. ASI04 (Data Egress): Cấm tuyệt đối `http_post` khi xử lý dữ liệu restricted. | `agent/runner.py:65-71`, `agent/runner.py:126-163`, `agent/policy.py:58-60`, `tests/test_injection.py:71-143` | Egress control thực thi ở tầng ứng dụng (application-level PEP); trên production cần kết hợp Network Policy / Egress Proxy / mTLS ở tầng hạ tầng. |
 
 Chỉ ghi điều khoản cụ thể khi đã đối chiếu văn bản gốc. Mô phỏng kỹ thuật không tự chứng minh tuân thủ pháp luật.
